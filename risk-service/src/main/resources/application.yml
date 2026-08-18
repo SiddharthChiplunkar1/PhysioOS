@@ -1,0 +1,21 @@
+server:
+  port: 8105
+
+spring:
+  application:
+    name: risk-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/risk_db
+    username: risk_db
+    password: password
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
