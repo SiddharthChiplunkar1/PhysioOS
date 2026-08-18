@@ -1,0 +1,29 @@
+# PRD Section 79: Docker Requirements
+# - run as non-root
+# - use minimal images
+# - externalize configuration
+
+# STAGE 1: Build
+FROM eclipse-temurin:21-jdk-alpine AS builder
+WORKDIR /app
+COPY . .
+# Note: For multi-module, you typically specify which module to build, or build all.
+RUN ./mvnw clean package -DskipTests
+
+# STAGE 2: Run
+FROM eclipse-temurin:21-jre-alpine
+WORKDIR /app
+
+# Create non-root user
+RUN addgroup -S physioos && adduser -S physioos -G physioos
+USER physioos:physioos
+
+# Expect an argument for the specific jar to copy
+ARG JAR_FILE
+COPY --from=builder /app/${JAR_FILE} app.jar
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s \
+  CMD wget -q --spider http://localhost:8080/actuator/health || exit 1
+
+ENTRYPOINT ["java", "-jar", "app.jar"]

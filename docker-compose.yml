@@ -1,0 +1,96 @@
+version: '3.8'
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: physioos-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      # Create initial databases for all services
+      POSTGRES_MULTIPLE_DATABASES: identity_db,organization_db,clinic_db,authorization_db,employee_db,patient_db,appointment_db,clinical_db,exercise_db,health_metrics_db,device_db,resource_db,document_db,configuration_db,feature_flag_db,crm_db,billing_db,payment_db,inventory_db,notification_db,workflow_db,analytics_db,ai_db,recommendation_db,risk_db,search_db,audit_db,background_job_db
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./docker/postgres-init.sh:/docker-entrypoint-initdb.d/postgres-init.sh
+    networks:
+      - physioos-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: physioos-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - physioos-network
+
+  kafka:
+    image: confluentinc/cp-kafka:7.4.0
+    container_name: physioos-kafka
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENERS: PLAINTEXT://kafka:29092,CONTROLLER://kafka:29093,PLAINTEXT_HOST://0.0.0.0:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:29093'
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+    networks:
+      - physioos-network
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: physioos-prometheus
+    ports:
+      - "9090:9090"
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+    volumes:
+      - ./docker/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - physioos-network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: physioos-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    networks:
+      - physioos-network
+
+  loki:
+    image: grafana/loki:2.9.0
+    container_name: physioos-loki
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - physioos-network
+
+  tempo:
+    image: grafana/tempo:latest
+    container_name: physioos-tempo
+    command: [ "-config.file=/etc/tempo.yaml" ]
+    volumes:
+      - ./docker/tempo.yml:/etc/tempo.yaml
+    ports:
+      - "3200:3200"   # tempo
+      - "4317:4317"   # otlp grpc
+      - "4318:4318"   # otlp http
+    networks:
+      - physioos-network
+
+volumes:
+  postgres-data:
+
+networks:
+  physioos-network:
+    driver: bridge

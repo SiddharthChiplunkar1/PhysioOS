@@ -1,0 +1,21 @@
+server:
+  port: 8101
+
+spring:
+  application:
+    name: workflow-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/workflow_db
+    username: workflow_db
+    password: password
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

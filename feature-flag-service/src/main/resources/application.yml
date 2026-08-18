@@ -1,0 +1,21 @@
+server:
+  port: 8095
+
+spring:
+  application:
+    name: feature-flag-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/feature_flag_db
+    username: feature_flag_db
+    password: password
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

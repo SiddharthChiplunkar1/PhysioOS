@@ -1,0 +1,21 @@
+server:
+  port: 8108
+
+spring:
+  application:
+    name: background-job-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/background_job_db
+    username: background_job_db
+    password: password
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
