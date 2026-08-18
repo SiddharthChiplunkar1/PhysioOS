@@ -30,6 +30,16 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
+    - name: Set up JDK 21 (For Maven Cache)
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+        cache: maven
+        
+    - name: Resolve Dependencies for Trivy
+      run: mvn dependency:resolve || true
+    
     # Placeholder for SAST (e.g. Semgrep, SonarQube)
     - name: Run SAST Scan (Semgrep)
       run: echo "Running Semgrep..."
