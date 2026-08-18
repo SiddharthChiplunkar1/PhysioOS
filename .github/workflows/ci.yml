@@ -34,9 +34,14 @@ jobs:
     - name: Run SAST Scan (Semgrep)
       run: echo "Running Semgrep..."
       
-    # Placeholder for Dependency Scanning
-    - name: Run Dependency Check (OWASP)
-      run: mvn dependency-check:check
+    # Perform a lightning-fast Trivy filesystem scan for dependencies instead of the slow Maven OWASP plugin
+    - name: Run Dependency Vulnerability Scan (Trivy)
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        format: 'table'
+        exit-code: '0' # Set to 1 to break the build on critical vulnerabilities
+        severity: 'CRITICAL,HIGH'
 
   docker-build:
     name: Build Docker Images & SBOM
