@@ -44,3 +44,4 @@ build/
 *.zip
 *.tar.gz
 *.rar
+/.metadata/
