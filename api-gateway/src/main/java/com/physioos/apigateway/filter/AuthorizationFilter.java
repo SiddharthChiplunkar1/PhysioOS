@@ -39,6 +39,7 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
                     }
 
                     String roleName=jwtAuth.getToken().getClaimAsString("role");
+                    if(roleName==null||roleName.isBlank())exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
                     AuthorizationRequest request=new AuthorizationRequest(roleName,permissionName);
                     return authorizationClient.checkPermission(request).flatMap(response -> {
                     				if (response.allowed()) {
